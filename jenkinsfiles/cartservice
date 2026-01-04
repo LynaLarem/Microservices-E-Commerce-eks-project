@@ -17,7 +17,7 @@ pipeline {
             steps {
                 script {
                     // Vérifiez que ce chemin existe dans votre repo
-                    dir('src/cartservice') { 
+                    dir('src/cartservice/src') { 
                         sh 'docker build -t cartservice .'
                     }
                 }
