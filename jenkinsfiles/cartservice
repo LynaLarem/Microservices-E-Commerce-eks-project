@@ -10,7 +10,7 @@ pipeline {
         stage('Checkout from Git') {
             steps {
                 // REMPLACEZ PAR VOTRE URL GITHUB
-                git branch: 'main', url: 'https://github.com/LynaLarem/Microservices-E-Commerce-eks-project.git'
+                git branch: 'master', url: 'https://github.com/LynaLarem/Microservices-E-Commerce-eks-project.git'
             }
         }
         stage("Docker Image Build") {
