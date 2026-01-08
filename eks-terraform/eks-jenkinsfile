@@ -1,62 +1,89 @@
 pipeline {
     agent any
-
     parameters {
-        choice(
-            name: 'ACTION',
-            choices: ['apply', 'destroy'],
-            description: '🔧 Select the Terraform action to perform'
-        )
+        choice(name: 'ACTION', choices: ['apply', 'destroy'], description: '🔧 Action Terraform')
     }
-
-    environment {
-        // On lie les variables AWS aux secrets Jenkins que tu as créés
-        AWS_ACCESS_KEY_ID     = credentials('accesskey')
-        AWS_SECRET_ACCESS_KEY = credentials('secretkey')
-        AWS_SESSION_TOKEN     = credentials('token')
-        AWS_DEFAULT_REGION    = 'us-east-1'
-    }
-
     stages {
-        stage('Checkout from Git') {
+        stage('Nettoyage et Checkout') {
             steps {
-                // Cette partie est gérée par la configuration du job (SCM)
+                deleteDir()
                 checkout scm
             }
         }
-
-        stage('Terraform version') {
+        stage('Correction des Fichiers') {
             steps {
-                sh 'terraform --version'
-            }
-        }
+                script {
+                    writeFile file: 'eks-terraform/backend.tf', text: """
+terraform {
+  backend "local" {}
+}
+"""
+                    sh """
+                    cat <<EOF > eks-terraform/main.tf
+provider "aws" {
+  region = "us-east-1"
+}
 
-        stage('Terraform init') {
-            steps {
-                dir('eks-terraform') {
-                    sh 'terraform init --reconfigure'
+data "aws_vpc" "main" { 
+  tags = { Name = "Jumphost-vpc" } 
+}
+
+data "aws_subnet" "subnet-1" { 
+  vpc_id = data.aws_vpc.main.id
+  filter { 
+    name = "tag:Name"
+    values = ["Public-Subnet-1"] 
+  } 
+}
+
+data "aws_subnet" "subnet-2" { 
+  vpc_id = data.aws_vpc.main.id
+  filter { 
+    name = "tag:Name"
+    values = ["Public-subnet2"] 
+  } 
+}
+
+data "aws_security_group" "selected" { 
+  vpc_id = data.aws_vpc.main.id
+  filter { 
+    name = "tag:Name"
+    values = ["Jumphost-sg"] 
+  } 
+}
+
+resource "aws_eks_cluster" "eks" {
+  name     = "project-eks"
+  role_arn = "arn:aws:iam::891376965767:role/LabRole"
+  vpc_config {
+    subnet_ids         = [data.aws_subnet.subnet-1.id, data.aws_subnet.subnet-2.id]
+    security_group_ids = [data.aws_security_group.selected.id]
+  }
+}
+
+resource "aws_eks_node_group" "node-grp" {
+  cluster_name    = aws_eks_cluster.eks.name
+  node_group_name = "my-nodes"
+  node_role_arn = "arn:aws:iam::891376965767:role/LabRole"
+  subnet_ids      = [data.aws_subnet.subnet-1.id, data.aws_subnet.subnet-2.id]
+  capacity_type   = "ON_DEMAND"
+  instance_types  = ["t2.large"]
+  scaling_config  { 
+    desired_size = 2
+    max_size = 3
+    min_size = 1 
+  }
+}
+EOF
+                    """
                 }
             }
         }
-
-        stage('Terraform plan') {
+        stage('Terraform Run') {
             steps {
                 dir('eks-terraform') {
-                    sh 'terraform plan'
-                }
-            }
-        }
-
-        stage('Terraform Action') {
-            steps {
-                dir('eks-terraform') {
-                    script {
-                        if (params.ACTION == 'apply') {
-                            sh 'terraform apply -auto-approve'
-                        } else {
-                            sh 'terraform destroy -auto-approve'
-                        }
-                    }
+                    sh 'terraform init -reconfigure'
+                    sh "terraform ${params.ACTION} -auto-approve"
                 }
             }
         }
