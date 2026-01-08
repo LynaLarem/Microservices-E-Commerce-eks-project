@@ -1,81 +1,28 @@
 pipeline {
     agent any
-
     parameters {
-        choice(
-            name: 'ACTION',
-            choices: ['apply', 'destroy'],
-            description: '🔧 Select the Terraform action to perform (apply = create/update, destroy = delete all)'
-        )
+        choice(name: 'ACTION', choices: ['apply', 'destroy'], description: '🔧 Action Terraform')
     }
-
-    environment {
-        // Liaison avec les secrets Secret Text créés dans Jenkins
-        AWS_ACCESS_KEY_ID     = credentials('accesskey')
-        AWS_SECRET_ACCESS_KEY = credentials('secretkey')
-        AWS_SESSION_TOKEN     = credentials('token')
-        AWS_DEFAULT_REGION    = 'us-east-1'
-    }
-
     stages {
-        stage('Checkout from Git') {
+        stage('Checkout') {
             steps {
-                // Utilise l'ID de ton token GitHub configuré dans Jenkins
-                checkout([$class: 'GitSCM', 
-                    branches: [[name: '*/master']], 
-                    userRemoteConfigs: [[url: 'https://github.com/LynaLarem/Microservices-E-Commerce-eks-project.git', 
-                    credentialsId: 'my-git-pattoken']]])
-            }
-        }
-
-        stage('Terraform version') {
-            steps {
-                sh 'terraform --version'
-            }
-        }
-
-        stage('Terraform init') {
-            steps {
-                dir('ecr-terraform') {
-                    sh 'terraform init --reconfigure'
+                deleteDir()
+                checkout scm
+                
+                script {
+                    writeFile file: 'ecr-terraform/backend.tf', text: """
+terraform {
+  backend "local" {}
+}
+"""
                 }
             }
         }
-
-        stage('Terraform validate') {
+        stage('Terraform Run') {
             steps {
                 dir('ecr-terraform') {
-                    sh 'terraform validate'
-                }
-            }
-        }
-
-        stage('Terraform plan') {
-            steps {
-                dir('ecr-terraform') {
-                    sh 'terraform plan'
-                }
-            }
-        }
-
-        stage('Terraform apply') {
-            when {
-                expression { params.ACTION == 'apply' }
-            }
-            steps {
-                dir('ecr-terraform') {
-                    sh 'terraform apply -auto-approve'
-                }
-            }
-        }
-
-        stage('Terraform destroy') {
-            when {
-                expression { params.ACTION == 'destroy' }
-            }
-            steps {
-                dir('ecr-terraform') {
-                    sh 'terraform destroy -auto-approve'
+                    sh 'terraform init -reconfigure'
+                    sh "terraform ${params.ACTION} -auto-approve"
                 }
             }
         }
