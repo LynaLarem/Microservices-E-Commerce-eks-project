@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -10,10 +9,22 @@ pipeline {
         )
     }
 
+    environment {
+        // Liaison avec les secrets Secret Text créés dans Jenkins
+        AWS_ACCESS_KEY_ID     = credentials('accesskey')
+        AWS_SECRET_ACCESS_KEY = credentials('secretkey')
+        AWS_SESSION_TOKEN     = credentials('token')
+        AWS_DEFAULT_REGION    = 'us-east-1'
+    }
+
     stages {
         stage('Checkout from Git') {
             steps {
-                echo 'Checking out Git repository...'
+                // Utilise l'ID de ton token GitHub configuré dans Jenkins
+                checkout([$class: 'GitSCM', 
+                    branches: [[name: '*/master']], 
+                    userRemoteConfigs: [[url: 'https://github.com/LynaLarem/Microservices-E-Commerce-eks-project.git', 
+                    credentialsId: 'my-git-pattoken']]])
             }
         }
 
