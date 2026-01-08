@@ -9,10 +9,19 @@ pipeline {
         )
     }
 
+    environment {
+        // On lie les variables AWS aux secrets Jenkins que tu as créés
+        AWS_ACCESS_KEY_ID     = credentials('accesskey')
+        AWS_SECRET_ACCESS_KEY = credentials('secretkey')
+        AWS_SESSION_TOKEN     = credentials('token')
+        AWS_DEFAULT_REGION    = 'us-east-1'
+    }
+
     stages {
         stage('Checkout from Git') {
             steps {
-                echo 'Checking out Git repository...'
+                // Cette partie est gérée par la configuration du job (SCM)
+                checkout scm
             }
         }
 
@@ -30,14 +39,6 @@ pipeline {
             }
         }
 
-        stage('Terraform validate') {
-            steps {
-                dir('eks-terraform') {
-                    sh 'terraform validate'
-                }
-            }
-        }
-
         stage('Terraform plan') {
             steps {
                 dir('eks-terraform') {
@@ -46,24 +47,16 @@ pipeline {
             }
         }
 
-        stage('Terraform apply') {
-            when {
-                expression { params.ACTION == 'apply' }
-            }
+        stage('Terraform Action') {
             steps {
                 dir('eks-terraform') {
-                    sh 'terraform apply -auto-approve'
-                }
-            }
-        }
-
-        stage('Terraform destroy') {
-            when {
-                expression { params.ACTION == 'destroy' }
-            }
-            steps {
-                dir('eks-terraform') {
-                    sh 'terraform destroy -auto-approve'
+                    script {
+                        if (params.ACTION == 'apply') {
+                            sh 'terraform apply -auto-approve'
+                        } else {
+                            sh 'terraform destroy -auto-approve'
+                        }
+                    }
                 }
             }
         }
