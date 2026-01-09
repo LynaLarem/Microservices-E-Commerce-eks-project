@@ -1,11 +1,19 @@
 pipeline {
     agent any 
+
     stages {
-        stage('Cleaning Workspace') { steps { cleanWs() } }
-        stage('Checkout from Git') { steps { git branch: 'master', url: 'https://github.com/LynaLarem/Microservices-E-Commerce-eks-project.git' } }
+        stage('Cleaning Workspace') { 
+            steps { cleanWs() } 
+        }
+        stage('Checkout from Git') { 
+            steps { 
+                git branch: 'master', url: 'https://github.com/LynaLarem/Microservices-E-Commerce-eks-project.git' 
+            } 
+        }
         stage("Docker Image Build") {
             steps {
                 script {
+                    // Chemin vers le dossier source
                     dir('src/currencyservice') {
                         sh 'docker build -t currencyservice .'
                     }
@@ -16,8 +24,13 @@ pipeline {
             steps {
                 script {
                     sh '''
+                    # Connexion à ECR (ID: 891376965767)
                     aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 891376965767.dkr.ecr.us-east-1.amazonaws.com
+                    
+                    # Tagging avec build number
                     docker tag currencyservice:latest 891376965767.dkr.ecr.us-east-1.amazonaws.com/currencyservice:${BUILD_NUMBER}
+                    
+                    # Pushing vers ECR
                     docker push 891376965767.dkr.ecr.us-east-1.amazonaws.com/currencyservice:${BUILD_NUMBER}
                     '''
                 }
@@ -31,15 +44,22 @@ pipeline {
                 YAML_FILE = "currencyservice.yaml"
             }
             steps {
+                // Utilisation du dossier kubernetes-files
                 dir('kubernetes-files') {
-                    withCredentials([string(credentialsId: 'my-git-pattoken', variable: 'git_token')]) {
+                    // Correction du credential pour correspondre à ton Jenkins
+                    withCredentials([usernamePassword(credentialsId: 'my-git-pattoken', passwordVariable: 'git_token', usernameVariable: 'git_user')]) {
                         sh '''
                             git config user.email "lyna@example.com"
                             git config user.name "${GIT_USER_NAME}"
+                            
+                            # Mise à jour de la ligne image dans le YAML
                             sed -i "s#image:.*#image: ${REPO_URL}:${BUILD_NUMBER}#g" ${YAML_FILE}
-                            git add .
-                            git commit -m "Update currencyservice to ${BUILD_NUMBER}"
-                            git push https://${git_token}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
+                            
+                            git add ${YAML_FILE}
+                            git commit -m "Update currencyservice to version ${BUILD_NUMBER}"
+                            
+                            # Push vers GitHub
+                            git push https://${git_user}:${git_token}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
                         '''
                     }
                 }
