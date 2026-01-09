@@ -26,11 +26,11 @@ pipeline {
                 script {
                     sh '''
                     # Connexion à TON compte AWS
-                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 481309507296.dkr.ecr.us-east-1.amazonaws.com
+                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 891376965767.dkr.ecr.us-east-1.amazonaws.com
 
-                    docker tag shippingservice:latest 481309507296.dkr.ecr.us-east-1.amazonaws.com/shippingservice:${BUILD_NUMBER}
+                    docker tag shippingservice:latest 891376965767.dkr.ecr.us-east-1.amazonaws.com/shippingservice:${BUILD_NUMBER}
 
-                    docker push 481309507296.dkr.ecr.us-east-1.amazonaws.com/shippingservice:${BUILD_NUMBER}
+                    docker push 891376965767.dkr.ecr.us-east-1.amazonaws.com/shippingservice:${BUILD_NUMBER}
                     '''
                 }
             }
@@ -40,7 +40,7 @@ pipeline {
                 GIT_REPO_NAME = "Microservices-E-Commerce-eks-project"
                 GIT_USER_NAME = "LynaLarem"
                 IMAGE_NAME = "shippingservice"
-                REPO_URL = "481309507296.dkr.ecr.us-east-1.amazonaws.com/shippingservice"
+                REPO_URL = "891376965767.dkr.ecr.us-east-1.amazonaws.com/shippingservice"
                 YAML_FILE = "shippingservice.yaml"
             }
             steps {
