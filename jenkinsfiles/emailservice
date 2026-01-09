@@ -29,13 +29,13 @@ pipeline {
                 script {
                     sh '''
                     # Connexion avec VOTRE ID de compte AWS
-                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 481309507296.dkr.ecr.us-east-1.amazonaws.com
+                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 891376965767.dkr.ecr.us-east-1.amazonaws.com
 
                     # Tag de l'image pour VOTRE ECR
-                    docker tag emailservice:latest 481309507296.dkr.ecr.us-east-1.amazonaws.com/emailservice:${BUILD_NUMBER}
+                    docker tag emailservice:latest 891376965767.dkr.ecr.us-east-1.amazonaws.com/emailservice:${BUILD_NUMBER}
 
                     # Push de l'image
-                    docker push 481309507296.dkr.ecr.us-east-1.amazonaws.com/emailservice:${BUILD_NUMBER}
+                    docker push 891376965767.dkr.ecr.us-east-1.amazonaws.com/emailservice:${BUILD_NUMBER}
                     '''
                 }
             }
@@ -46,7 +46,7 @@ pipeline {
                 GIT_EMAIL = "lyna.larem@example.com" // Vous pouvez mettre votre email GitHub ici
                 GIT_USER_NAME = "LynaLarem"
                 IMAGE_NAME = "emailservice"
-                REPO_URL = "481309507296.dkr.ecr.us-east-1.amazonaws.com/emailservice"
+                REPO_URL = "891376965767.dkr.ecr.us-east-1.amazonaws.com/emailservice"
                 YAML_FILE = "emailservice.yaml"
             }
             steps {
