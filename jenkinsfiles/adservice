@@ -7,7 +7,7 @@ pipeline {
         GIT_USER_NAME = "LynaLarem"
         IMAGE_NAME = "adservice"
         // Ton URL ECR avec ton ID AWS
-        REPO_URL = "481309507296.dkr.ecr.us-east-1.amazonaws.com/adservice"
+        REPO_URL = "89137696576.dkr.ecr.us-east-1.amazonaws.com/adservice"
         YAML_FILE = "adservice.yaml"
     }
 
@@ -37,7 +37,7 @@ pipeline {
                 script {
                     sh '''
                     # Connexion ECR
-                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 481309507296.dkr.ecr.us-east-1.amazonaws.com
+                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 89137696576.dkr.ecr.us-east-1.amazonaws.com
                     # Tagging
                     docker tag adservice:latest ${REPO_URL}:${BUILD_NUMBER}
                     # Pushing
