@@ -28,14 +28,14 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    # Connexion à VOTRE registre ECR
+                    # Connexion à VOTRE registre ECR (ID: 891376965767)
                     aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 891376965767.dkr.ecr.us-east-1.amazonaws.com
 
                     # Tag de l'image avec le numéro de build Jenkins
                     docker tag frontend:latest 891376965767.dkr.ecr.us-east-1.amazonaws.com/frontend:${BUILD_NUMBER}
 
-                    # Push vers VOTRE dépôt ECR
-                    docker push 89137696576.dkr.ecr.us-east-1.amazonaws.com/frontend:${BUILD_NUMBER}
+                    # Push vers VOTRE dépôt ECR (Correction de l'ID ici : ajout du 7 final)
+                    docker push 891376965767.dkr.ecr.us-east-1.amazonaws.com/frontend:${BUILD_NUMBER}
                     '''
                 }
             }
@@ -50,7 +50,8 @@ pipeline {
                 YAML_FILE = "frontend.yaml"
             }
             steps {
-                dir('kubernetes-files') {
+                // Vérifiez que le dossier 'kubernetes-manifests' est le bon chemin dans votre Git
+                dir('kubernetes-manifests') { 
                     withCredentials([string(credentialsId: 'my-git-pattoken', variable: 'git_token')]) {
                         sh '''
                             git config user.email "${GIT_EMAIL}"
