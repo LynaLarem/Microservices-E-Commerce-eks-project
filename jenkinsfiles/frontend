@@ -9,7 +9,6 @@ pipeline {
         }
         stage('Checkout from Git') {
             steps {
-                // Utilise VOTRE dépôt fork
                 git branch: 'master', url: 'https://github.com/LynaLarem/Microservices-E-Commerce-eks-project.git'
             }
         }
@@ -34,7 +33,7 @@ pipeline {
                     # Tag de l'image avec le numéro de build Jenkins
                     docker tag frontend:latest 891376965767.dkr.ecr.us-east-1.amazonaws.com/frontend:${BUILD_NUMBER}
 
-                    # Push vers VOTRE dépôt ECR (Correction de l'ID ici : ajout du 7 final)
+                    # Push vers VOTRE dépôt ECR
                     docker push 891376965767.dkr.ecr.us-east-1.amazonaws.com/frontend:${BUILD_NUMBER}
                     '''
                 }
@@ -50,9 +49,9 @@ pipeline {
                 YAML_FILE = "frontend.yaml"
             }
             steps {
-                // Vérifiez que le dossier 'kubernetes-manifests' est le bon chemin dans votre Git
                 dir('kubernetes-manifests') { 
-                    withCredentials([string(credentialsId: 'my-git-pattoken', variable: 'git_token')]) {
+                    // Correction ici : Utilisation de usernamePassword pour correspondre à ton credential Jenkins
+                    withCredentials([usernamePassword(credentialsId: 'my-git-pattoken', passwordVariable: 'git_token', usernameVariable: 'git_user')]) {
                         sh '''
                             git config user.email "${GIT_EMAIL}"
                             git config user.name "${GIT_USER_NAME}"
@@ -62,7 +61,9 @@ pipeline {
                             
                             git add .
                             git commit -m "Update ${IMAGE_NAME} Image to version ${BUILD_NUMBER}"
-                            git push https://${git_token}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
+                            
+                            # Utilisation du token sécurisé pour le push
+                            git push https://${git_user}:${git_token}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
                         '''
                     }
                 }
