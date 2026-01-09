@@ -27,12 +27,12 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    # REMPLACEZ 481309507296 PAR VOTRE ID DE COMPTE (VOIR AWS DETAILS)
-                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 481309507296.dkr.ecr.us-east-1.amazonaws.com
+                    # REMPLACEZ 891376965767 PAR VOTRE ID DE COMPTE (VOIR AWS DETAILS)
+                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 891376965767.dkr.ecr.us-east-1.amazonaws.com
 
-                    docker tag cartservice:latest 481309507296.dkr.ecr.us-east-1.amazonaws.com/cartservice:${BUILD_NUMBER}
+                    docker tag cartservice:latest 891376965767.dkr.ecr.us-east-1.amazonaws.com/cartservice:${BUILD_NUMBER}
 
-                    docker push 481309507296.dkr.ecr.us-east-1.amazonaws.com/cartservice:${BUILD_NUMBER}
+                    docker push 891376965767.dkr.ecr.us-east-1.amazonaws.com/cartservice:${BUILD_NUMBER}
                     '''
                 }
             }
@@ -42,7 +42,7 @@ pipeline {
                 GIT_REPO_NAME = "Microservices-E-Commerce-eks-project"
                 GIT_USER_NAME = "LynaLarem" // VOTRE PSEUDO GITHUB
                 IMAGE_NAME = "cartservice"
-                REPO_URL = "481309507296.dkr.ecr.us-east-1.amazonaws.com/cartservice"
+                REPO_URL = "891376965767.dkr.ecr.us-east-1.amazonaws.com/cartservice"
                 YAML_FILE = "cartservice.yaml"
             }
             steps {
