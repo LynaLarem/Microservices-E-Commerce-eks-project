@@ -6,7 +6,7 @@ pipeline {
         GIT_EMAIL = "lyna@example.com"
         GIT_USER_NAME = "LynaLarem"
         IMAGE_NAME = "recommendationservice"
-        REPO_URL = "481309507296.dkr.ecr.us-east-1.amazonaws.com/recommendationservice"
+        REPO_URL = "891376965767.dkr.ecr.us-east-1.amazonaws.com/recommendationservice"
         YAML_FILE = "recommendationservice.yaml"
     }
 
@@ -32,7 +32,7 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 481309507296.dkr.ecr.us-east-1.amazonaws.com
+                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 891376965767.dkr.ecr.us-east-1.amazonaws.com
                     docker tag recommendationservice:latest ${REPO_URL}:${BUILD_NUMBER}
                     docker push ${REPO_URL}:${BUILD_NUMBER}
                     '''
