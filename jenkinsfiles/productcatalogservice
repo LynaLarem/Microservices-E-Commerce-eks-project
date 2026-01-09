@@ -29,13 +29,13 @@ pipeline {
                 script {
                     sh '''
                     # Connexion à VOTRE registre ECR
-                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 481309507296.dkr.ecr.us-east-1.amazonaws.com
+                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 891376965767.dkr.ecr.us-east-1.amazonaws.com
 
                     # Tag de l'image avec le numéro de build Jenkins
-                    docker tag productcatalogservice:latest 481309507296.dkr.ecr.us-east-1.amazonaws.com/productcatalogservice:${BUILD_NUMBER}
+                    docker tag productcatalogservice:latest 891376965767.dkr.ecr.us-east-1.amazonaws.com/productcatalogservice:${BUILD_NUMBER}
 
                     # Push vers VOTRE dépôt ECR
-                    docker push 481309507296.dkr.ecr.us-east-1.amazonaws.com/productcatalogservice:${BUILD_NUMBER}
+                    docker push 891376965767.dkr.ecr.us-east-1.amazonaws.com/productcatalogservice:${BUILD_NUMBER}
                     '''
                 }
             }
@@ -46,7 +46,7 @@ pipeline {
                 GIT_EMAIL = "lyna.larem@example.com"
                 GIT_USER_NAME = "LynaLarem"
                 IMAGE_NAME = "productcatalogservice"
-                REPO_URL = "481309507296.dkr.ecr.us-east-1.amazonaws.com/productcatalogservice"
+                REPO_URL = "891376965767.dkr.ecr.us-east-1.amazonaws.com/productcatalogservice"
                 YAML_FILE = "productcatalogservice.yaml"
             }
             steps {
