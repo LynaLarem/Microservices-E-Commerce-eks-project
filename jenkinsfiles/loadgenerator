@@ -13,6 +13,7 @@ pipeline {
         stage("Docker Image Build") {
             steps {
                 script {
+                    // Accès au dossier source du loadgenerator
                     dir('src/loadgenerator') {
                         sh 'docker build -t loadgenerator .'
                     }
@@ -23,8 +24,13 @@ pipeline {
             steps {
                 script {
                     sh '''
+                    # Connexion ECR avec ton ID 891376965767
                     aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 891376965767.dkr.ecr.us-east-1.amazonaws.com
+                    
+                    # Tagging
                     docker tag loadgenerator:latest 891376965767.dkr.ecr.us-east-1.amazonaws.com/loadgenerator:${BUILD_NUMBER}
+                    
+                    # Pushing
                     docker push 891376965767.dkr.ecr.us-east-1.amazonaws.com/loadgenerator:${BUILD_NUMBER}
                     '''
                 }
@@ -39,15 +45,21 @@ pipeline {
                 YAML_FILE = "loadgenerator.yaml"
             }
             steps {
+                // Utilisation du dossier kubernetes-files validé
                 dir('kubernetes-files') {
-                    withCredentials([string(credentialsId: 'my-git-pattoken', variable: 'git_token')]) {
+                    withCredentials([usernamePassword(credentialsId: 'my-git-pattoken', passwordVariable: 'git_token', usernameVariable: 'git_user')]) {
                         sh '''
                             git config user.email "lyna@example.com"
                             git config user.name "${GIT_USER_NAME}"
+                            
+                            # Mise à jour du tag image dans le YAML
                             sed -i "s#image:.*#image: ${REPO_URL}:${BUILD_NUMBER}#g" ${YAML_FILE}
-                            git add .
+                            
+                            git add ${YAML_FILE}
                             git commit -m "Update ${IMAGE_NAME} Image to version ${BUILD_NUMBER}"
-                            git push https://${git_token}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master -f
+                            
+                            # Push sécurisé vers GitHub
+                            git push https://${git_user}:${git_token}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
                         '''
                     }
                 }
