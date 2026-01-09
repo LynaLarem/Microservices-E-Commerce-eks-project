@@ -35,7 +35,7 @@ pipeline {
                     docker tag frontend:latest 481309507296.dkr.ecr.us-east-1.amazonaws.com/frontend:${BUILD_NUMBER}
 
                     # Push vers VOTRE dépôt ECR
-                    docker push 481309507296.dkr.ecr.us-east-1.amazonaws.com/frontend:${BUILD_NUMBER}
+                    docker push 89137696576.dkr.ecr.us-east-1.amazonaws.com/frontend:${BUILD_NUMBER}
                     '''
                 }
             }
