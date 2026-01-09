@@ -6,8 +6,8 @@ pipeline {
         GIT_EMAIL = "lyna@example.com"
         GIT_USER_NAME = "LynaLarem"
         IMAGE_NAME = "adservice"
-        // Ton URL ECR avec ton ID AWS
-        REPO_URL = "89137696576.dkr.ecr.us-east-1.amazonaws.com/adservice"
+        // Correction : ID AWS complet 891376965767 (12 chiffres)
+        REPO_URL = "891376965767.dkr.ecr.us-east-1.amazonaws.com/adservice"
         YAML_FILE = "adservice.yaml"
     }
 
@@ -36,8 +36,8 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    # Connexion ECR
-                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 89137696576.dkr.ecr.us-east-1.amazonaws.com
+                    # Connexion ECR avec l'ID correct
+                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 891376965767.dkr.ecr.us-east-1.amazonaws.com
                     # Tagging
                     docker tag adservice:latest ${REPO_URL}:${BUILD_NUMBER}
                     # Pushing
@@ -49,8 +49,10 @@ pipeline {
 
         stage('Update Deployment file') {
             steps {
-                dir('kubernetes-files') {
-                    withCredentials([string(credentialsId: 'my-git-pattoken', variable: 'git_token')]) {
+                // Utilisation du dossier standard kubernetes-manifests
+                dir('kubernetes-manifests') {
+                    // Utilisation de usernamePassword pour ton type de credential Jenkins
+                    withCredentials([usernamePassword(credentialsId: 'my-git-pattoken', passwordVariable: 'git_token', usernameVariable: 'git_user')]) {
                         sh '''
                             git config user.email "${GIT_EMAIL}"
                             git config user.name "${GIT_USER_NAME}"
@@ -60,8 +62,8 @@ pipeline {
                             
                             git add .
                             git commit -m "Update ${IMAGE_NAME} Image to version ${BUILD_NUMBER}"
-                            # Push forcé pour garantir la réussite devant la caméra
-                            git push https://${git_token}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master -f
+                            # Push sécurisé avec Token
+                            git push https://${git_user}:${git_token}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
                         '''
                     }
                 }
